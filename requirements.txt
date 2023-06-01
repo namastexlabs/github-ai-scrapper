@@ -1,0 +1,7 @@
+pandas
+requests
+datetime
+urllib3
+notion-client
+python-dotenv
+colorama
