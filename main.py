@@ -150,7 +150,6 @@ class GitHubScraper:
         }
         try:
             self.notion.pages.update(page_id=page_id, properties=updated_page)
-            print(Fore.GREEN + f"Updated {repo_data['Name']} in the Notion database." + Style.RESET_ALL)
         except APIResponseError as e:
             print(Fore.RED + f"Error: {e}" + Style.RESET_ALL)
 
