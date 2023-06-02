@@ -2,15 +2,16 @@ import requests
 import json
 import pandas as pd
 import csv
+import time 
+import os
 from datetime import datetime, date, timedelta
 from urllib.parse import urlparse
-import time
 from notion_client import Client
 from notion_client.errors import APIResponseError
 from dotenv import load_dotenv
-import os
 from colorama import Fore, Style
 from dateutil.parser import parse
+from repo_finder import GitHubRepoFinder  # ensure to replace 'repo_finder' with your filename
 
 def parse_duration(duration_str):
     if duration_str.endswith('h'):
@@ -258,3 +259,33 @@ scraper.load_repositories('list.txt')
 
 # Run the script with the chosen database
 scraper.run()
+
+# The main function that runs the interactive command-line interface
+def main():
+    while True:
+        print("Please choose an option:")
+        print("1. Find new repositories")
+        print("2. Run GitHub Scraper")
+        print("3. Exit")
+
+        option = input("Enter your option: ")
+        if option == '1':
+            finder = GitHubRepoFinder()
+            finder.run()
+        elif option == '2':
+            # Initialize the scraper
+            scraper = GitHubScraper()
+
+            # Load the list of repositories
+            scraper.load_repositories('list.txt')
+
+            # Run the script with the chosen database
+            scraper.run()
+        elif option == '3':
+            print("Exiting the program.")
+            break
+        else:
+            print("Invalid option. Please choose a valid option.")
+
+if __name__ == "__main__":
+    main()
