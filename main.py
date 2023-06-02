@@ -37,7 +37,7 @@ class GitHubScraper:
     def create_csv_file(self, filename):
         with open(filename, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-            writer.writerow(["name", "description", "language", "URL", "Stars", "Forks", "Last Updated", "Last Scraped"])
+            writer.writerow(["Name", "Description", "Language", "URL", "Stars", "Forks", "Last Updated", "Last Scraped"])
 
     def add_to_csv_file(self, filename, repo_data):
         with open(filename, mode='a', newline='', encoding='utf-8') as file:
@@ -66,41 +66,6 @@ class GitHubScraper:
             last_scraped_str = repo_row['Last Scraped'].values[0]
             return datetime.fromisoformat(last_scraped_str)
         return None
-    
-
-
-    def run(self):
-        if self.database_id is None:
-            self.select_database()
-
-        SCRAPE_FREQUENCY = os.getenv("SCRAPE_FREQUENCY", "1d")  # default to 1 day if not specified in .env file
-        scrape_frequency_seconds = parse_duration(SCRAPE_FREQUENCY).total_seconds()
-
-        repo_data_list = []
-        for repo in self.repositories:
-            repo_data = self.get_repository_data(repo)
-            if repo_data is not None:
-                last_scraped_date = self.get_last_scraped_date_csv(repo_data['name'])
-                if last_scraped_date is not None:
-                    time_since_last_scraped = (datetime.utcnow() - last_scraped_date).total_seconds()
-                    if time_since_last_scraped < scrape_frequency_seconds:
-                        print(Fore.YELLOW + f"Skipping {repo} as it was scraped less than {SCRAPE_FREQUENCY} ago." + Style.RESET_ALL)
-                        continue
-                repo_data_list.append(repo_data)
-                print(Fore.GREEN + f"Successfully fetched data for {repo}." + Style.RESET_ALL)
-
-        for repo_data in repo_data_list:
-            self.add_to_csv(repo_data)
-            print(Fore.GREEN + f"Successfully added {repo_data['name']} to the CSV file." + Style.RESET_ALL)
-
-        for repo_data in repo_data_list:
-            page_id = self.get_page_id_by_url(repo_data['html_url'])
-            if page_id is None:
-                self.add_to_database(self.database_id, repo_data)
-                print(Fore.GREEN + f"Successfully added {repo_data['name']} to the Notion database." + Style.RESET_ALL)
-            else:
-                self.update_in_database(self.database_id, repo_data, page_id)
-                print(Fore.GREEN + f"Successfully updated {repo_data['name']} in the Notion database." + Style.RESET_ALL)
 
     def select_database(self):
         databases = self.notion.search(filter={"property": "object", "value": "database"}).get("results")
@@ -157,35 +122,35 @@ class GitHubScraper:
 
     def add_to_database(self, database_id, repo_data):
         new_page = {
-            "name": {"title": [{"text": {"content": repo_data['name']}}]},
-            "Description": {"rich_text": [{"text": {"content": repo_data['description']}}]},
-            "Language": {"select": {"name": repo_data['language']}},
-            "URL": {"url": repo_data['html_url']},
-            "Stars": {"number": repo_data['stargazers_count']},
-            "Forks": {"number": repo_data['forks_count']},
-            "Last Updated": {"date": {"start": repo_data['pushed_at']}},
+            "Name": {"title": [{"text": {"content": repo_data['Name']}}]},
+            "Description": {"rich_text": [{"text": {"content": repo_data['Description']}}]},
+            "Language": {"select": {"name": repo_data['Language']}},
+            "URL": {"url": repo_data['URL']},
+            "Stars": {"number": repo_data['Stars']},
+            "Forks": {"number": repo_data['Forks']},
+            "Last Updated": {"date": {"start": repo_data['Last Updated']}},
             "Last Scraped": {"date": {"start": datetime.now().isoformat()}},  # new field
         }
         try:
             self.notion.pages.create(parent={"database_id": database_id}, properties=new_page)
-            print(Fore.GREEN + f"Added {repo_data['name']} to the Notion database." + Style.RESET_ALL)
+            print(Fore.GREEN + f"Added {repo_data['Name']} to the Notion database." + Style.RESET_ALL)
         except APIResponseError as e:
             print(Fore.RED + f"Error: {e}" + Style.RESET_ALL)
 
     def update_in_database(self, database_id, repo_data, page_id):
         updated_page = {
-            "name": {"title": [{"text": {"content": repo_data['name']}}]},
-            "Description": {"rich_text": [{"text": {"content": repo_data['description']}}]},
-            "Language": {"select": {"name": repo_data['language']}},
-            "URL": {"url": repo_data['html_url']},
-            "Stars": {"number": repo_data['stargazers_count']},
-            "Forks": {"number": repo_data['forks_count']},
-            "Last Updated": {"date": {"start": repo_data['pushed_at']}},
+            "Name": {"title": [{"text": {"content": repo_data['Name']}}]},
+            "Description": {"rich_text": [{"text": {"content": repo_data['Description']}}]},
+            "Language": {"select": {"name": repo_data['Language']}},
+            "URL": {"url": repo_data['URL']},
+            "Stars": {"number": repo_data['Stars']},
+            "Forks": {"number": repo_data['Forks']},
+            "Last Updated": {"date": {"start": repo_data['Last Updated']}},
             "Last Scraped": {"date": {"start": datetime.now().isoformat()}},
         }
         try:
             self.notion.pages.update(page_id=page_id, properties=updated_page)
-            print(Fore.GREEN + f"Updated {repo_data['name']} in the Notion database." + Style.RESET_ALL)
+            print(Fore.GREEN + f"Updated {repo_data['Name']} in the Notion database." + Style.RESET_ALL)
         except APIResponseError as e:
             print(Fore.RED + f"Error: {e}" + Style.RESET_ALL)
 
