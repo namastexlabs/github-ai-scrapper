@@ -14,7 +14,7 @@ GitHub Scraper is a Python script designed to extract information about GitHub r
 1. **Install the required libraries**: Before running the script, you need to install all the required libraries by running the following command:
 
     ```
-    pip install requests pandas notion-client python-dotenv colorama python-dateutil
+    pip install -r requirements.txt
     ```
 
 2. **Set up your environment variables**: The script requires access to the GitHub API and the Notion API, so you need to provide your API tokens. Create a `.env` file in the same directory as your script and add your GitHub and Notion API tokens like this:
